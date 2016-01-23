@@ -1,21 +1,25 @@
 package com.abc;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.lang.Math.abs;
 
 public class Customer {
-    private String name;
-    private List<Account> accounts;
+    private final String name;
+    private final List<Account> accounts;
 
     public Customer(String name) {
         this.name = name;
-        this.accounts = new ArrayList<Account>();
+        this.accounts = new CopyOnWriteArrayList<Account>();
     }
 
     public String getName() {
         return name;
+    }
+    
+    public List<Account> getAccounts() {
+    	return accounts;
     }
 
     public Customer openAccount(Account account) {
@@ -47,26 +51,13 @@ public class Customer {
     }
 
     private String statementForAccount(Account a) {
-        String s = "";
-
-       //Translate to pretty account type
-        switch(a.getAccountType()){
-            case Account.CHECKING:
-                s += "Checking Account\n";
-                break;
-            case Account.SAVINGS:
-                s += "Savings Account\n";
-                break;
-            case Account.MAXI_SAVINGS:
-                s += "Maxi Savings Account\n";
-                break;
-        }
+        String s = a.getAccountType();
 
         //Now total up all the transactions
         double total = 0.0;
-        for (Transaction t : a.transactions) {
-            s += "  " + (t.amount < 0 ? "withdrawal" : "deposit") + " " + toDollars(t.amount) + "\n";
-            total += t.amount;
+        for (Transaction t : a.getTransactions()) {
+            s += "  " + (t.getAmount() < 0 ? "withdrawal" : "deposit") + " " + toDollars(t.getAmount()) + "\n";
+            total += t.getAmount();
         }
         s += "Total " + toDollars(total);
         return s;
@@ -74,5 +65,12 @@ public class Customer {
 
     private String toDollars(double d){
         return String.format("$%,.2f", abs(d));
+    }
+    
+    public void transfer(final Account fromAccount, final Account toAccount, final double amount) {
+    	if (!Utils.isOwnAccount(this, fromAccount)) {
+    		throw new IllegalArgumentException("cannot transfer from other people's account");
+    	}
+    	fromAccount.transfer(toAccount, amount);
     }
 }

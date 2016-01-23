@@ -1,13 +1,13 @@
 package com.abc;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Bank {
-    private List<Customer> customers;
+    private final List<Customer> customers;
 
     public Bank() {
-        customers = new ArrayList<Customer>();
+        customers = new CopyOnWriteArrayList<Customer>();
     }
 
     public void addCustomer(Customer customer) {
@@ -35,12 +35,10 @@ public class Bank {
     }
 
     public String getFirstCustomer() {
-        try {
-            customers = null;
-            return customers.get(0).getName();
-        } catch (Exception e){
-            e.printStackTrace();
-            return "Error";
-        }
+    	if (customers.isEmpty()) {
+    		throw new IllegalStateException("Bank does not have any customer!");
+    	} else {
+    		return customers.get(0).getName();
+    	}
     }
 }
